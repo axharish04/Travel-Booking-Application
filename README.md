@@ -28,7 +28,7 @@ A modern, responsive travel booking platform built with Django, featuring a beau
 
 ## Live Demo
 
-**Deployed Application**: https://aravindtravel.pythonanywhere.com
+**Deployed Application**: 
 
 **Demo Credentials**:
 - Username: demo
