@@ -28,7 +28,7 @@ A modern, responsive travel booking platform built with Django, featuring a beau
 
 ## Live Demo
 
-**Deployed Application**: 
+**Deployed Application**: https://qtcn9f44-8000.inc1.devtunnels.ms/
 
 **Demo Credentials**:
 - Username: demo
