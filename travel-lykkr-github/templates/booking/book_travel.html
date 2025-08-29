@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Book Travel - Travel Lykkr{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-ticket-alt"></i> Book Your Travel
+                </h4>
+            </div>
+            <div class="card-body">
+                {% crispy form %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Booking Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge badge-{{ travel.type }} mb-2">
+                        {% if travel.type == 'flight' %}
+                            <i class="fas fa-plane"></i> Flight
+                        {% elif travel.type == 'train' %}
+                            <i class="fas fa-train"></i> Train
+                        {% else %}
+                            <i class="fas fa-bus"></i> Bus
+                        {% endif %}
+                    </span>
+                    <h6>{{ travel.travel_id }}</h6>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <strong>Route:</strong><br>
+                    {{ travel.source }} → {{ travel.destination }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Departure:</strong><br>
+                    {{ travel.departure_date|date:"M d, Y" }} at {{ travel.departure_time|time:"g:i A" }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Arrival:</strong><br>
+                    {{ travel.arrival_date|date:"M d, Y" }} at {{ travel.arrival_time|time:"g:i A" }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Price per seat:</strong><br>
+                    <span class="h5 text-primary">${{ travel.price }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Available seats:</strong><br>
+                    <span class="{% if travel.available_seats < 5 %}text-warning{% else %}text-success{% endif %}">
+                        {{ travel.available_seats }}
+                    </span>
+                </div>
+                
+                <hr>
+                
+                <div id="total-calculation" class="mb-3">
+                    <strong>Total Amount:</strong><br>
+                    <span class="h4 text-success" id="total-amount">₹{{ travel.price }}</span>
+                </div>
+                
+                <div class="alert alert-info small">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> Cancellation is allowed up to 24 hours before departure.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Real-time price calculation
+document.addEventListener('DOMContentLoaded', function() {
+    const seatsInput = document.getElementById('id_number_of_seats');
+    const totalAmount = document.getElementById('total-amount');
+    const pricePerSeat = {{ travel.price }};
+    
+    if (seatsInput && totalAmount) {
+        seatsInput.addEventListener('input', function() {
+            const seats = parseInt(this.value) || 1;
+            const total = seats * pricePerSeat;
+            totalAmount.textContent = '₹' + total.toFixed(2);
+        });
+    }
+});
+</script>
+{% endblock %}

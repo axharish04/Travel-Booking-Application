@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Explore India - Travel Lykkr{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-4">
+            <h1 class="gradient-text display-4 mb-3">
+                <i class="fas fa-map-marked-alt"></i> Discover Incredible India
+            </h1>
+            <p class="lead text-muted">From Kashmir to Kanyakumari, from Gujarat to West Bengal - Your journey begins here!</p>
+        </div>
+        
+        <!-- Search Form -->
+        <div class="search-section">
+            <h5 class="text-center mb-4">
+                <i class="fas fa-search text-primary"></i> Find Your Perfect Journey
+            </h5>
+            {% crispy form %}
+        </div>
+        
+        <!-- Results -->
+        {% if travels %}
+        <div class="row">
+            {% for travel in travels %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card travel-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span class="badge badge-{{ travel.type }} fs-6">
+                            {% if travel.type == 'flight' %}
+                                <i class="fas fa-plane"></i> विमान (Flight)
+                            {% elif travel.type == 'train' %}
+                                <i class="fas fa-train"></i> रेल (Train)
+                            {% else %}
+                                <i class="fas fa-bus"></i> बस (Bus)
+                            {% endif %}
+                        </span>
+                        <small class="text-muted fw-bold">{{ travel.travel_id }}</small>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h5 class="card-title text-primary fw-bold">
+                            {{ travel.source }} → {{ travel.destination }}
+                        </h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted"><i class="fas fa-calendar-alt"></i> Departure</small>
+                                <div class="fw-semibold">{{ travel.departure_date|date:"d M, Y" }}</div>
+                                <div class="text-primary">{{ travel.departure_time|time:"g:i A" }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted"><i class="fas fa-clock"></i> Arrival</small>
+                                <div class="fw-semibold">{{ travel.arrival_date|date:"d M, Y" }}</div>
+                                <div class="text-success">{{ travel.arrival_time|time:"g:i A" }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted"><i class="fas fa-rupee-sign"></i> किराया (Fare)</small>
+                                <div class="h5 price-highlight">₹{{ travel.price }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted"><i class="fas fa-users"></i> Available Seats</small>
+                                <div class="{% if travel.available_seats < 5 %}text-warning{% else %}text-success{% endif %} fw-bold">
+                                    {{ travel.available_seats }}/{{ travel.total_seats }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if travel.available_seats < 5 and travel.available_seats > 0 %}
+                        <div class="alert alert-warning py-2">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <small>केवल {{ travel.available_seats }} सीटें बची हैं!</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-footer bg-transparent">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'travel_detail' travel.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-info-circle"></i> विवरण देखें (View Details)
+                            </a>
+                            {% if travel.is_available %}
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'book_travel' travel.id %}" class="btn btn-primary">
+                                    <i class="fas fa-ticket-alt"></i> अभी बुक करें (Book Now)
+                                </a>
+                                {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt"></i> लॉगिन करें (Login to Book)
+                                </a>
+                                {% endif %}
+                            {% else %}
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fas fa-times"></i> उपलब्ध नहीं (Not Available)
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Travel options pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-angle-double-left"></i> First
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-angle-left"></i> Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in page_obj.paginator.page_range %}
+                {% if page_num == page_obj.number %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% elif page_num > page_obj.number|add:'-3' and page_num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ page_num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Next <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Last <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-map-signs fa-5x text-muted opacity-50"></i>
+            </div>
+            <h4 class="text-muted">कोई यात्रा विकल्प नहीं मिला</h4>
+            <h6 class="text-muted">No travel options found</h6>
+            <p class="text-muted">कृपया अपने खोज मानदंड को समायोजित करें<br>Please try adjusting your search criteria</p>
+            <a href="{% url 'travel_list' %}" class="btn btn-primary">
+                <i class="fas fa-refresh"></i> नई खोज (New Search)
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}मेरी बुकिंग्स - Travel Lykkr{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-4">
+            <h1 class="gradient-text display-5 mb-3">
+                <i class="fas fa-ticket-alt"></i> मेरी यात्राएं
+            </h1>
+            <p class="lead text-muted">आपकी सभी बुकिंग्स एक स्थान पर | All your bookings in one place</p>
+        </div>
+        
+        {% if bookings %}
+        <div class="row">
+            {% for booking in bookings %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card booking-card h-100 {% if booking.status == 'cancelled' %}border-danger{% elif booking.status == 'confirmed' %}border-success{% else %}border-warning{% endif %}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span class="badge badge-{{ booking.travel_option.type }} fs-6">
+                            {% if booking.travel_option.type == 'flight' %}
+                                <i class="fas fa-plane"></i> विमान (Flight)
+                            {% elif booking.travel_option.type == 'train' %}
+                                <i class="fas fa-train"></i> रेल (Train)
+                            {% else %}
+                                <i class="fas fa-bus"></i> बस (Bus)
+                            {% endif %}
+                        </span>
+                        <span class="booking-status-{{ booking.status }}">
+                            <i class="fas fa-{% if booking.status == 'confirmed' %}check-circle{% else %}times-circle{% endif %}"></i>
+                            {% if booking.status == 'confirmed' %}
+                                पुष्ट (Confirmed)
+                            {% else %}
+                                रद्द (Cancelled)
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h5 class="card-title text-primary fw-bold">{{ booking.booking_id }}</h5>
+                        
+                        <p class="card-text">
+                            <strong>मार्ग (Route):</strong><br>
+                            <span class="gradient-text fw-semibold">{{ booking.travel_option.source }} → {{ booking.travel_option.destination }}</span>
+                        </p>
+                        
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted"><i class="fas fa-calendar-alt"></i> प्रस्थान</small>
+                                <div class="fw-semibold">{{ booking.travel_option.departure_date|date:"d M, Y" }}</div>
+                                <div class="text-primary">{{ booking.travel_option.departure_time|time:"g:i A" }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted"><i class="fas fa-users"></i> सीटें</small>
+                                <div class="h5 text-info">{{ booking.number_of_seats }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted"><i class="fas fa-rupee-sign"></i> कुल भुगतान</small>
+                                <div class="h5 price-highlight">₹{{ booking.total_price }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted"><i class="fas fa-calendar-check"></i> बुकिंग दिनांक</small>
+                                <div>{{ booking.booking_date|date:"d M, Y" }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-user-friends"></i> यात्री (Passengers)</small>
+                            <div class="small">{{ booking.passenger_names }}</div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted"><i class="fas fa-address-card"></i> संपर्क (Contact)</small>
+                            <div class="small">
+                                {{ booking.contact_email }}<br>
+                                {{ booking.contact_phone }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'travel_detail' booking.travel_option.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-info-circle"></i> यात्रा विवरण देखें (View Travel Details)
+                            </a>
+                            {% if booking.status == 'confirmed' and booking.can_cancel %}
+                            <a href="{% url 'cancel_booking' booking.booking_id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-times"></i> बुकिंग रद्द करें (Cancel Booking)
+                            </a>
+                            {% elif booking.status == 'confirmed' %}
+                            <button class="btn btn-outline-secondary btn-sm" disabled title="प्रस्थान के 24 घंटे के भीतर रद्द नहीं किया जा सकता">
+                                <i class="fas fa-clock"></i> रद्द नहीं कर सकते (Cannot Cancel)
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Bookings pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in page_obj.paginator.page_range %}
+                {% if page_num == page_obj.number %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% elif page_num > page_obj.number|add:'-3' and page_num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-ticket-alt fa-5x text-muted opacity-50"></i>
+            </div>
+            <h4 class="text-muted">कोई बुकिंग नहीं मिली</h4>
+            <h6 class="text-muted">No bookings found</h6>
+            <p class="text-muted">
+                आपने अभी तक कोई बुकिंग नहीं की है।
+                <br>You haven't made any bookings yet.
+            </p>
+            <a href="{% url 'travel_list' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> यात्रा विकल्प खोजें (Search Travel Options)
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ travel.source }} to {{ travel.destination }} - Travel Lykkr{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card travel-detail-card">
+            <div class="card-header bg-gradient text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <span class="badge badge-{{ travel.type }} me-2">
+                        {% if travel.type == 'flight' %}
+                            <i class="fas fa-plane"></i> विमान (Flight)
+                        {% elif travel.type == 'train' %}
+                            <i class="fas fa-train"></i> रेल (Train)
+                        {% else %}
+                            <i class="fas fa-bus"></i> बस (Bus)
+                        {% endif %}
+                    </span>
+                    {{ travel.travel_id }}
+                </h4>
+                <div class="h4 text-warning mb-0">₹{{ travel.price }}</div>
+            </div>
+            
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="departure-info p-3 border-start border-primary border-4 bg-light rounded">
+                            <h3 class="h5 text-primary mb-2">प्रस्थान (From)</h3>
+                            <h2 class="gradient-text">{{ travel.source }}</h2>
+                            <p class="mb-0">
+                                <strong>प्रस्थान (Departure):</strong><br>
+                                {{ travel.departure_date|date:"l, d F Y" }}<br>
+                                <span class="text-primary fw-bold">{{ travel.departure_time|time:"g:i A" }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="arrival-info p-3 border-start border-success border-4 bg-light rounded">
+                            <h3 class="h5 text-success mb-2">गंतव्य (To)</h3>
+                            <h2 class="gradient-text">{{ travel.destination }}</h2>
+                            <p class="mb-0">
+                                <strong>आगमन (Arrival):</strong><br>
+                                {{ travel.arrival_date|date:"l, d F Y" }}<br>
+                                <span class="text-success fw-bold">{{ travel.arrival_time|time:"g:i A" }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="info-card text-center p-3 border rounded">
+                            <i class="fas fa-users fa-2x text-info mb-2"></i>
+                            <h5 class="text-muted">उपलब्ध सीटें (Available Seats)</h5>
+                            <p class="h4 {% if travel.available_seats < 5 %}text-warning{% else %}text-success{% endif %}">
+                                {{ travel.available_seats }} / {{ travel.total_seats }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-card text-center p-3 border rounded">
+                            <i class="fas fa-rupee-sign fa-2x text-success mb-2"></i>
+                            <h5 class="text-muted">प्रति सीट किराया (Price per seat)</h5>
+                            <p class="h4 price-highlight">₹{{ travel.price }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-card text-center p-3 border rounded">
+                            <i class="fas fa-check-circle fa-2x text-primary mb-2"></i>
+                            <h5 class="text-muted">स्थिति (Status)</h5>
+                            <p class="h5">
+                                {% if travel.is_available %}
+                                    <span class="badge bg-success">उपलब्ध (Available)</span>
+                                {% else %}
+                                    <span class="badge bg-danger">अनुपलब्ध (Not Available)</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if travel.available_seats < 5 and travel.available_seats > 0 %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    केवल {{ travel.available_seats }} सीटें बची हैं! जल्दी बुक करें।
+                    <br><small>Only {{ travel.available_seats }} seats remaining! Book quickly.</small>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'travel_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> वापस खोजें (Back to Search)
+                    </a>
+                    
+                    {% if travel.is_available %}
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'book_travel' travel.id %}" class="btn btn-primary">
+                            <i class="fas fa-ticket-alt"></i> यह यात्रा बुक करें (Book This Travel)
+                        </a>
+                        {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> लॉगिन करें (Login to Book)
+                        </a>
+                        {% endif %}
+                    {% else %}
+                    <button class="btn btn-secondary" disabled>
+                        <i class="fas fa-times"></i> उपलब्ध नहीं (Not Available)
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> यात्रा जानकारी (Travel Information)
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>यात्रा प्रकार (Travel Type):</strong> 
+                        {% if travel.type == 'flight' %}
+                            विमान (Flight) ✈️
+                        {% elif travel.type == 'train' %}
+                            रेल (Train) 🚆
+                        {% else %}
+                            बस (Bus) 🚌
+                        {% endif %}
+                    </li>
+                    <li class="mb-2">
+                        <strong>यात्रा ID (Travel ID):</strong> {{ travel.travel_id }}
+                    </li>
+                    <li class="mb-2">
+                        <strong>यात्रा समय (Duration):</strong>
+                        {% with departure_datetime=travel.departure_date|date:"Y-m-d "|add:travel.departure_time|time:"H:i:s" %}
+                        {% with arrival_datetime=travel.arrival_date|date:"Y-m-d "|add:travel.arrival_time|time:"H:i:s" %}
+                        <!-- Duration calculation would need custom template tag -->
+                        समय देखें (Check times above)
+                        {% endwith %}
+                        {% endwith %}
+                    </li>
+                </ul>
+                
+                <hr>
+                
+                <h6 class="text-primary">महत्वपूर्ण नोट्स (Important Notes):</h6>
+                <ul class="small text-muted">
+                    <li>प्रस्थान से 24 घंटे पहले तक रद्दीकरण की अनुमति है<br>
+                        <small>Cancellation allowed up to 24 hours before departure</small>
+                    </li>
+                    <li>प्रस्थान से 30 मिनट पहले पहुंचें<br>
+                        <small>Please arrive 30 minutes before departure</small>
+                    </li>
+                    <li>बोर्डिंग के लिए वैध ID आवश्यक<br>
+                        <small>Valid ID required for boarding</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

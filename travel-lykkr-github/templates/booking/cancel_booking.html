@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Booking - Travel Lykkr{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Cancel Booking
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> Are you sure you want to cancel this booking? This action cannot be undone.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Booking Details</h5>
+                        <ul class="list-unstyled">
+                            <li><strong>Booking ID:</strong> {{ booking.booking_id }}</li>
+                            <li><strong>Travel ID:</strong> {{ booking.travel_option.travel_id }}</li>
+                            <li><strong>Route:</strong> {{ booking.travel_option.source }} → {{ booking.travel_option.destination }}</li>
+                            <li><strong>Date:</strong> {{ booking.travel_option.departure_date|date:"M d, Y" }}</li>
+                            <li><strong>Time:</strong> {{ booking.travel_option.departure_time|time:"g:i A" }}</li>
+                            <li><strong>Seats:</strong> {{ booking.number_of_seats }}</li>
+                            <li><strong>Total Amount:</strong> ${{ booking.total_price }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Passenger Information</h5>
+                        <p><strong>Passengers:</strong><br>{{ booking.passenger_names }}</p>
+                        <p><strong>Contact Email:</strong><br>{{ booking.contact_email }}</p>
+                        <p><strong>Contact Phone:</strong><br>{{ booking.contact_phone }}</p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="alert alert-info">
+                    <h6>Cancellation Policy:</h6>
+                    <ul class="mb-0">
+                        <li>Cancellation is free if done at least 24 hours before departure</li>
+                        <li>Your refund will be processed within 3-5 business days</li>
+                        <li>The cancelled seats will be made available for other passengers</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'my_bookings' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Keep Booking
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times"></i> Yes, Cancel Booking
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
